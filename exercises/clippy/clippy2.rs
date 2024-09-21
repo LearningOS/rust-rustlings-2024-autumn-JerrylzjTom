@@ -5,13 +5,10 @@
 
 
 fn main() {
-    let mut res: i32 = 42;
+    let mut res = 42;
     let option = Some(12);
-    while let Some(x) = option {
-        res = res.checked_add(x).unwrap_or_else(|| {
-            println!("Overflow occurred!");
-            i32::MAX // or choose an appropriate fallback value
-        });
+    if let Some(x) = option {
+        res += x; // Add the value to `res`
     }
     println!("{}", res);
 }
