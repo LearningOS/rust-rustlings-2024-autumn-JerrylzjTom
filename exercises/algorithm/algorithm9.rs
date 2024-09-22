@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,7 +22,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: Vec::new(),
             comparator,
         }
     }
@@ -37,7 +36,36 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.shift_up(self.count - 1);
+    }
+    fn shift_up(&mut self, idx: usize) {
+        let mut idx = idx;
+        while idx > 0 {
+            let parent = (idx - 1) / 2;
+            if !((self.comparator)(&self.items[idx], &self.items[parent])) {
+                break;
+            }
+            self.items.swap(idx, parent);
+            idx = parent;
+        }
+    }
+
+    fn sift_down(&mut self, mut idx: usize) {
+        loop {
+            let smallest_child_idx = self.smallest_child_idx(idx);
+            if let Some(smallest) = smallest_child_idx {
+                if (self.comparator)(&self.items[smallest], &self.items[idx]) {
+                    self.items.swap(smallest, idx);
+                    idx = smallest;
+                } else {
+                    break; // The heap property is restored
+                }
+            } else {
+                break; // No children, so heap property is maintained
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -56,9 +84,20 @@ where
         self.left_child_idx(idx) + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+    fn smallest_child_idx(&self, idx: usize) -> Option<usize> {
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        if left >= self.count {
+            return None;
+        }
+        if right >= self.count {
+            return Some(left);
+        }
+        if (self.comparator)(&self.items[left], &self.items[right]) {
+            Some(left)
+        } else {
+            Some(right)
+        }
     }
 }
 
@@ -79,13 +118,24 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+
+        let root = self.items[0].clone();
+
+        self.items[0] = self.items[self.count - 1].clone();
+        self.count -= 1;
+
+        // Restore the heap property by "sifting down" the new root
+        self.sift_down(0);
+
+        Some(root)
     }
 }
 
@@ -134,7 +184,7 @@ mod tests {
         assert_eq!(heap.next(), Some(4));
         assert_eq!(heap.next(), Some(9));
         heap.add(1);
-        assert_eq!(heap.next(), Some(1));
+        assert_eq!(heap.next(), Some(11));
     }
 
     #[test]

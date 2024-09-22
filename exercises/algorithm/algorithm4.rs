@@ -3,7 +3,7 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
+
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -50,13 +50,56 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        let new_node = Box::new(TreeNode::new(value));
+        match self.root {
+            Some(ref mut node) => {
+                BinarySearchTree::insert_into_node(node, new_node);
+            }
+            None => {
+                self.root = Some(new_node);
+            }
+        }
+    }
+
+    fn insert_into_node(current: &mut Box<TreeNode<T>>, new_node: Box<TreeNode<T>>) {
+        if new_node.value < current.value {
+            match current.left {
+                Some(ref mut left_child) => {
+                    BinarySearchTree::insert_into_node(left_child, new_node);
+                }
+                None => {
+                    current.left = Some(new_node);
+                }
+            }
+        } else if new_node.value > current.value {
+            match current.right {
+                Some(ref mut right_child) => {
+                    BinarySearchTree::insert_into_node(right_child, new_node);
+                }
+                None => {
+                    current.right = Some(new_node);
+                }
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        BinarySearchTree::search_in_node(&self.root, &value)
+    }
+    fn search_in_node(node: &Option<Box<TreeNode<T>>>, value: &T) -> bool {
+        match node {
+            Some(ref current_node) => {
+                if &current_node.value == value {
+                    true
+                } else if value < &current_node.value {
+                    BinarySearchTree::search_in_node(&current_node.left, value)
+                } else {
+                    BinarySearchTree::search_in_node(&current_node.right, value)
+                }
+            }
+            None => false,
+        }
     }
 }
 

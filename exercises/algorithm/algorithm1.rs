@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -69,15 +68,43 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self where T: PartialOrd {
+        let mut list_a_ptr = list_a.start;
+        let mut list_b_ptr = list_b.start;
+        let mut list_c = LinkedList::new();
+        while list_a_ptr.is_some() && list_b_ptr.is_some() {
+            if unsafe { &(*list_a_ptr.unwrap().as_ptr()).val } <= unsafe { &(*list_b_ptr.unwrap().as_ptr()).val } {
+                match list_c.end {
+                    None => list_c.start = list_a_ptr,
+                    Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = list_a_ptr },
+                }
+                list_c.end = list_a_ptr;
+                list_a_ptr = unsafe { (*list_a_ptr.unwrap().as_ptr()).next };
+            } else {
+                match list_c.end {
+                    None => list_c.start = list_b_ptr,
+                    Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = list_b_ptr },
+                }
+                list_c.end = list_b_ptr;
+                list_b_ptr = unsafe { (*list_b_ptr.unwrap().as_ptr()).next };
+            }
         }
-	}
+        if list_a_ptr.is_some() {
+            match list_c.end {
+                None => list_c.start = list_a_ptr,
+                Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = list_a_ptr },
+            }
+            list_c.end = list_a.end;
+        }else {
+            match list_c.end {
+                None => list_c.start = list_b_ptr,
+                Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = list_b_ptr },
+            }
+            list_c.end = list_b.end;
+        }
+        list_c.length = list_a.length + list_b.length;
+        list_c
+    }
 }
 
 impl<T> Display for LinkedList<T>
